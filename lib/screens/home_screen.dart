@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:laundry/bloc/cart_bloc.dart';
+import 'package:laundry/models/models.dart';
 import 'package:laundry/screens/cart_screen.dart';
-import 'package:laundry/screens/enquiry_form.dart';
-import 'package:laundry/screens/landing_page.dart';
+import 'package:laundry/screens/order_details.dart';
+
+import '../cart_bloc/cart_bloc.dart';
 import '../product.dart';
 import 'details_screen.dart';
 
@@ -12,21 +16,13 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  final int cartCount = 5;
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  String switching = 'Pick';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(_tabListener);
-  }
-
-  void _tabListener() {
-    setState(() {});
   }
 
   @override
@@ -41,53 +37,58 @@ class _HomeScreenState extends State<HomeScreen>
       appBar: AppBar(
         backgroundColor: Color(0xFF0083F5),
         actions: [
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CartScreen(),
+          BlocBuilder<CartBloc, CartState>(
+            builder: (context, state) {
+              int cartCount = state.cartItems.length;
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CartScreen(),
+                    ),
+                  );
+                },
+                child: CircleAvatar(
+                  backgroundColor: Color(0xFFD9EDFF),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Image(
+                        image: AssetImage('assets/images/Vector.png'),
+                        height: 45,
+                        width: 30,
+                      ),
+                      if (cartCount > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: Color(0xFFFFFFFF),
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: BoxConstraints(
+                              minWidth: 6,
+                              minHeight: 6,
+                            ),
+                            child: Text(
+                              cartCount.toString(),
+                              style: TextStyle(
+                                color: Color(0xFF0083F5),
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               );
             },
-            child: CircleAvatar(
-              backgroundColor: Color(0xFFD9EDFF),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Image(
-                    image: AssetImage('assets/images/Vector.png'),
-                    height: 45,
-                    width: 30,
-                  ),
-                  if (cartCount > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFFFFFF),
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: BoxConstraints(
-                          minWidth: 6,
-                          minHeight: 6,
-                        ),
-                        child: Text(
-                          cartCount.toString(),
-                          style: TextStyle(
-                            color: Color(0xFF0083F5),
-                            fontSize: 8,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
           ),
           SizedBox(width: 10.0),
           CircleAvatar(
@@ -96,42 +97,6 @@ class _HomeScreenState extends State<HomeScreen>
           SizedBox(width: 10.0),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color(0xFF0083F5),
-              ),
-              child: Text('Drawer Header'),
-            ),
-            ListTile(
-              title: const Text('Enquiry'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Enquiryform(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LandingPage(),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-      backgroundColor: Color(0xFF0083F5),
       body: Column(
         children: [
           // Search TextField at the top
@@ -171,13 +136,13 @@ class _HomeScreenState extends State<HomeScreen>
                 tabs: [
                   Container(
                     decoration: BoxDecoration(
-                        color: _tabController.index == 0
-                            ? Color(0xFF0083F5)
-                            : Color(0xFFFFFFFF),
-                        border: Border.all(color: Color(0xFF0083F5)),
-                        borderRadius: BorderRadius.circular(6.0),
+                      color: _tabController.index == 0
+                          ? Color(0xFF0083F5)
+                          : Color(0xFFFFFFFF),
+                      border: Border.all(color: Color(0xFF0083F5)),
+                      borderRadius: BorderRadius.circular(6.0),
                     ),
-                    padding: EdgeInsets.only(left: 48.0,right: 48.0,top: 8.0,bottom: 8.0),
+                    padding: EdgeInsets.only(left: 48.0, right: 48.0, top: 8.0, bottom: 8.0),
                     margin: EdgeInsets.only(left: 5.0),
                     child: Center(
                       child: Text(
@@ -198,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen>
                             : Color(0xFFFFFFFF),
                         border: Border.all(color: Color(0xFF0083F5)),
                         borderRadius: BorderRadius.circular(6.0)),
-                    padding: EdgeInsets.only(left: 48.0,right: 48.0,top: 8.0,bottom: 8.0),
+                    padding: EdgeInsets.only(left: 48.0, right: 48.0, top: 8.0, bottom: 8.0),
                     child: Center(
                       child: Text(
                         'Drop',
@@ -247,10 +212,10 @@ class PickProduct extends StatelessWidget {
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
             ),
-            itemCount: Products.prod.length,
+            itemCount: ProductData.pickUpProducts.length, // Use filtered list
             itemBuilder: (context, index) {
-              final item = Products.prod[index];
-              return Containers(product: item);
+              final product = ProductData.pickUpProducts[index];
+              return ProductCard(product: product);
             }),
       ),
     );
@@ -273,19 +238,20 @@ class DropProduct extends StatelessWidget {
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
             ),
-            itemCount: Products1.prod1.length,
+            itemCount: ProductData.dropOffProducts.length, // Use filtered list
             itemBuilder: (context, index) {
-              final item = Products1.prod1[index];
-              return Containers(product: item);
+              final product = ProductData.dropOffProducts[index];
+              return ProductCard(product: product);
             }),
       ),
     );
   }
 }
 
-class Containers extends StatelessWidget {
-  const Containers({super.key, required this.product});
+class ProductCard extends StatelessWidget {
   final Product product;
+
+  const ProductCard({Key? key, required this.product}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -299,20 +265,20 @@ class Containers extends StatelessWidget {
         );
       },
       child: Container(
-        height: 180,
-        width: 174,
-        padding: EdgeInsets.only(top: 15.0),
-        decoration: BoxDecoration(
+          height: 180,
+          width: 174,
+          padding: EdgeInsets.only(top: 15.0),
+          decoration: BoxDecoration(
           boxShadow: [
-            BoxShadow(
-              color: Color(0x26000000),
-              offset: Offset(0, 0),
-              blurRadius: 14.0,
-            ),
-          ],
-          borderRadius: BorderRadius.circular(16.0),
-          color: Color(0xFFFFFFFF),
-        ),
+          BoxShadow(
+          color: Color(0x26000000),
+      offset: Offset(0, 0),
+      blurRadius: 14.0,
+    ),
+    ],
+    borderRadius: BorderRadius.circular(16.0),
+            color: Color(0xFFFFFFFF),
+          ),
         child: Column(
           children: [
             Container(

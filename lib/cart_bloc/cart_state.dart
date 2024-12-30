@@ -1,6 +1,16 @@
 part of 'cart_bloc.dart';
 
-@immutable
-sealed class CartState {}
+class CartState extends Equatable {
+  final List<CartItem> cartItems;
 
-final class CartInitial extends CartState {}
+  const CartState(this.cartItems);
+
+  CartState copyWith({
+    List<CartItem>? cartItems,
+  }) {
+    return CartState(cartItems ?? this.cartItems);
+  }
+
+  @override
+  List<Object> get props => [cartItems];
+}
